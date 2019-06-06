@@ -46,31 +46,42 @@ class Login extends Component {
 }
 
 class Main extends Component {
+	componentWillMount(){
+		this.state.questions =[];
+	}
 	componentDidMount(){
-		this.props.id && dynamodb.get({
-			TableName:APP,
-			Key:{
-				id:this.props.id
-			}
+		dynamodb.scan({
+			TableName:"thementals"
 		},(e,d) => {
 			if(e){
 				console.error(e);
-			}else if(d.Item){
-				if(d.Item.gameOver){
-					this.props.setState({screen:'GameOver',room:d.Item});
-				}else{
-					this.props.setState({screen:'Arena',room:d.Item});
-				}
+			}else{
+				this.setState({questions:d.Items});
 			}
-		});
+		})
+	}
+	doesAnswerMatch(q){
+		if(q.answer === q.input){
+			q.solved = true;
+			this.setState(this.state);
+		}else{
+			alert("wrong answer");
+		}
+	}
+	updateInput(input,q){
+		q.input = input;
+		this.setState(this.state);
 	}
 	render(){
 		return h('div',{class:'c'},
-			h('div',{class:'row'},
-				h('button',{
-					class:'col 12 w-100 btn',
-					onClick:e => this.props.setState({screen:'Quiz'})
-				},'Play')
+			this.state.questions.map(q => 
+				h("div",{class:"row" , style:"border: 1px solid black"},
+					h("span",{class: "col 3"},q.question),
+					q.solved ? h("span",{class: "col 9"},q.answer) : h("span", {class: "col 9"},
+						h("input", {value:q.input,onInput:e => this.updateInput(e.target.value,q)}), 
+						h("button",{onClick:e => this.doesAnswerMatch(q)}, "Check")
+					)
+				)
 			)
 		)
 	}
