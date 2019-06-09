@@ -1,3 +1,4 @@
+
 const APP = 'thementals';
 const request = function(url,queryParams,body,method){
     url = !queryParams ? url : `${url}${Object.keys(queryParams).filter(k => queryParams[k]).length ? `?${Object.keys(queryParams).reduce((a,c) => `${a}${encodeURIComponent(c)}=${encodeURIComponent(queryParams[c])}&`, '')}` : ''}`;
