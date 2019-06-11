@@ -51,13 +51,20 @@ class Main extends Component {
 		this.state.questions =[];
 	}
 	componentDidMount(){
-		dynamodb.scan({
-			TableName:"thementals"
+		var randomNumbers = this.generateRandom(this.props.config.quiz.number,this.props.config.quiz.min,this.props.config.quiz.max);
+		dynamodb.batchGet({
+			RequestItems:{
+				"thementals":{
+					Keys:randomNumbers.map(n => ({
+						id:''+n
+					}))
+				}
+			}
 		},(e,d) => {
 			if(e){
 				console.error(e);
 			}else{
-				this.setState({questions:d.Items});
+				this.setState({questions:d.Responses.thementals});
 			}
 		})
 	}
@@ -72,6 +79,19 @@ class Main extends Component {
 	updateInput(input,q){
 		q.input = input;
 		this.setState(this.state);
+	}
+
+	generateRandom(numberOfRandomNumbers, startNum, finishNum){//This function will generate an array of random numbers
+		var numbers = [];
+		var i = 0;
+		while (i < numberOfRandomNumbers){
+			var n = Math.floor(Math.random() * (finishNum - startNum + 1)) + startNum;
+			if(!numbers.includes(n)){
+				numbers.push(n);
+				i++;
+			}
+		}
+		return numbers;
 	}
 	render(){
 		return h('div',{class:'c'},
